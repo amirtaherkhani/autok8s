@@ -363,7 +363,7 @@ fi
 if [ ! -f /etc/apt/sources.list.d/docker.list ]; then
   echo -e "\033[32mAdding Docker repository\033[0m"
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o $KEYRINGS_DIR/docker.gpg
-  echo "deb [arch=$(dpkg --print-architecture) signed-by=$KEYRINGS_DIR/docker.gpg] https://download.docker.com/linux/ubuntu \
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=${KEYRINGS_DIR}/docker.gpg] https://download.docker.com/linux/ubuntu \
     $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 fi
 
@@ -373,12 +373,12 @@ if [ ! -f /etc/apt/sources.list.d/kubernetes.list ]; then
   echo -e "\033[32mAdding Google Kubernetes repository\033[0m"
   curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | sudo gpg --dearmor -o  $KEYRINGS_DIR/kubernetes-apt-keyring.gpg
   sudo chmod 644 $KEYRINGS_DIR/kubernetes-apt-keyring.gpg 
-  echo 'deb [signed-by=$KEYRINGS_DIR/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+  echo "deb [signed-by=${KEYRINGS_DIR}/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /" | sudo tee /etc/apt/sources.list.d/kubernetes.list
   sudo chmod 644 /etc/apt/sources.list.d/kubernetes.list   # helps tools such as command-not-found to work correctly
 
 fi
 
-apt-get update -q
+sudo apt-get update -y
 
 # Install Docker https://docs.docker.com/engine/install/ubuntu/
 
