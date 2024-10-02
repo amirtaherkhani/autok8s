@@ -229,7 +229,7 @@ echo -e "\033[32mInstalling prerequisites\033[0m"
 apt-get update -q
 apt-get install -qqy apt-transport-https ca-certificates cur  software-properties-common gzip gnupg lsb-release  socat
 
-#!/bin/bash
+
 
 # Check if UFW is installed
 if command -v ufw &> /dev/null; then
