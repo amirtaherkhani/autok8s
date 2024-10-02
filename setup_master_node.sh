@@ -17,7 +17,7 @@ export interface="eth0"                                     # Find with 'ip addr
 export ipAddress=""                                         # Require even if 'configureTCPIPSetting' is set to 'false'.
 export netmask=""
 export defaultGateway=""
-export dnsServers=("8.8.8.8" "4.4.4.4")                     # Don't specify more than 3. K8s will only use the first three and throw errors.
+export dnsServers=("8.8.8.8" "1.1.1.1")                     # Don't specify more than 3. K8s will only use the first three and throw errors.
 export dnsSearch=("domain.local")                           # Your local DNS search domain if you have one.
 
 # ------------------------------
@@ -332,7 +332,8 @@ fi
 echo -e "\033[32mInstalling prerequisites\033[0m"
 
 apt-get update -q
-apt-get install -qqy apt-transport-https ca-certificates curl software-properties-common gzip gnupg lsb-release
+apt-get install -qqy apt-transport-https ca-certificates cur  software-properties-common gzip gnupg lsb-release  socat
+
 
 # Add Docker Repository https://docs.docker.com/engine/install/ubuntu/
 
@@ -353,8 +354,11 @@ fi
 
 if [ ! -f /etc/apt/sources.list.d/kubernetes.list ]; then
   echo -e "\033[32mAdding Google Kubernetes repository\033[0m"
-  curl -fsSLo $KEYRINGS_DIR/kubernetes-archive-keyring.gpg https://dl.k8s.io/apt/doc/apt-key.gpg
-  echo "deb [signed-by=$KEYRINGS_DIR/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
+  curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | sudo gpg --dearmor -o  $KEYRINGS_DIR/kubernetes-apt-keyring.gpg
+  sudo chmod 644 $KEYRINGS_DIR/kubernetes-apt-keyring.gpg 
+  echo 'deb [signed-by=$KEYRINGS_DIR/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+  sudo chmod 644 /etc/apt/sources.list.d/kubernetes.list   # helps tools such as command-not-found to work correctly
+
 fi
 
 apt-get update -q
@@ -580,12 +584,11 @@ EOF
 fi
 
 # Install Metal LB https://metallb.universe.tf/installation/
-
+export K8S_NODE_NAME=$(hostnamectl --static | tr 'A-Z' 'a-z')
 if [ $k8sAllowMasterNodeSchedule == true ]; then
   echo -e "\033[32mInstall and Configure Metal LB\033[0m"
-
-  kubectl taint node $HOSTNAME node-role.kubernetes.io/control-plane:NoSchedule-
-  kubectl taint node $HOSTNAME node-role.kubernetes.io/master:NoSchedule- # for older versions  
+  kubectl taint node $K8S_NODE_NAME node-role.kubernetes.io/control-plane:NoSchedule-
+  kubectl taint node $K8S_NODE_NAME node-role.kubernetes.io/master:NoSchedule- # for older versions  
   kubectl create namespace metallb-system
   helm repo add metallb https://metallb.github.io/metallb
   helm repo update
