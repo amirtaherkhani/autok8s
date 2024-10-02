@@ -331,8 +331,8 @@ fi
 
 echo -e "\033[32mInstalling prerequisites\033[0m"
 
-apt-get update -y
-apt-get install -y apt-transport-https ca-certificates curl  software-properties-common gzip gnupg lsb-release  socat
+apt-get update -q
+apt-get install -qqy apt-transport-https ca-certificates curl  software-properties-common gzip gnupg lsb-release  socat
 
 
 
@@ -378,7 +378,7 @@ if [ ! -f /etc/apt/sources.list.d/kubernetes.list ]; then
 
 fi
 
-sudo apt-get update -y
+sudo apt-get update -q
 
 # Install Docker https://docs.docker.com/engine/install/ubuntu/
 
