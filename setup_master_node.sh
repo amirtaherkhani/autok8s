@@ -332,7 +332,7 @@ fi
 echo -e "\033[32mInstalling prerequisites\033[0m"
 
 apt-get update -q
-apt-get install -qqy apt-transport-https ca-certificates cur  software-properties-common gzip gnupg lsb-release  socat
+apt-get install -qqy apt-transport-https ca-certificates curl  software-properties-common gzip gnupg lsb-release  socat
 
 
 
