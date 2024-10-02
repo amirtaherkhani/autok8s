@@ -17,7 +17,7 @@ export interface="eth0"                                     # Find with 'ip addr
 export ipAddress=""
 export netmask=""
 export defaultGateway=""
-export dnsServers=("8.8.8.8" "4.4.4.4")                     # Don't specify more than 3. K8s will only use the first three and throw errors.
+export dnsServers=("8.8.8.8" "1.1.1.1")                     # Don't specify more than 3. K8s will only use the first three and throw errors.
 export dnsSearch=("domain.local")                           # Your local DNS search domain if you have one.
 
 # ------------------------------
@@ -227,8 +227,26 @@ fi
 echo -e "\033[32mInstalling prerequisites\033[0m"
 
 apt-get update -q
-apt-get install -qqy apt-transport-https ca-certificates curl software-properties-common gzip gnupg lsb-release
+apt-get install -qqy apt-transport-https ca-certificates cur  software-properties-common gzip gnupg lsb-release  socat
 
+#!/bin/bash
+
+# Check if UFW is installed
+if command -v ufw &> /dev/null; then
+    echo -e "\033[32mUFW is installed.\033[0m"
+    
+    # Check if UFW is active
+    if sudo ufw status | grep -q "active"; then
+        echo -e "\033[32mDisable Ubuntu UFW (firewall) for installation\033[0m"
+        sudo ufw disable
+        echo -e "\033[32mUFW has been disabled.\033[0m"
+    else
+        echo -e "\033[33mUFW is already disabled.\033[0m"
+    fi
+else
+    echo -e "\033[31mUFW is not installed on this system.\033[0m"
+fi
+ 
 # Add Docker Repository https://docs.docker.com/engine/install/ubuntu/
 
 export KEYRINGS_DIR="/etc/apt/keyrings"
@@ -237,11 +255,13 @@ if [ ! -d $KEYRINGS_DIR ]; then
   mkdir -m 0755 -p $KEYRINGS_DIR
 fi
 
-if [ ! -f /etc/apt/sources.list.d/docker.list ]; then
-  echo -e "\033[32mAdding Docker repository\033[0m"
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o $KEYRINGS_DIR/docker.gpg
-  echo "deb [arch=$(dpkg --print-architecture) signed-by=$KEYRINGS_DIR/docker.gpg] https://download.docker.com/linux/ubuntu \
-    $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+if [ ! -f /etc/apt/sources.list.d/kubernetes.list ]; then
+  echo -e "\033[32mAdding Google Kubernetes repository\033[0m"
+  curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | sudo gpg --dearmor -o  $KEYRINGS_DIR/kubernetes-apt-keyring.gpg
+  sudo chmod 644 $KEYRINGS_DIR/kubernetes-apt-keyring.gpg 
+  echo 'deb [signed-by=$KEYRINGS_DIR/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+  sudo chmod 644 /etc/apt/sources.list.d/kubernetes.list   # helps tools such as command-not-found to work correctly
+
 fi
 
 # Add Kubernetes Respository

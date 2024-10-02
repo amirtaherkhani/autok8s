@@ -335,6 +335,23 @@ apt-get update -q
 apt-get install -qqy apt-transport-https ca-certificates cur  software-properties-common gzip gnupg lsb-release  socat
 
 
+
+# Check if UFW is installed
+if command -v ufw &> /dev/null; then
+    echo -e "\033[32mUFW is installed.\033[0m"
+    
+    # Check if UFW is active
+    if sudo ufw status | grep -q "active"; then
+        echo -e "\033[32mDisable Ubuntu UFW (firewall) for installation\033[0m"
+        sudo ufw disable
+        echo -e "\033[32mUFW has been disabled.\033[0m"
+    else
+        echo -e "\033[33mUFW is already disabled.\033[0m"
+    fi
+else
+    echo -e "\033[31mUFW is not installed on this system.\033[0m"
+fi
+
 # Add Docker Repository https://docs.docker.com/engine/install/ubuntu/
 
 export KEYRINGS_DIR="/etc/apt/keyrings"
