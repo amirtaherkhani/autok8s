@@ -445,7 +445,7 @@ fi
 
 echo -e "\033[32mInitilizing Kubernetes\033[0m"
 
-kubeadm init --apiserver-advertise-address=$ipAddress --pod-network-cidr=10.244.0.0/16
+kubeadm init --apiserver-advertise-address=$ipAddress --pod-network-cidr=10.244.0.0/16 --v=5
 
 # Setup kube config files.
 
@@ -630,7 +630,7 @@ metadata:
   namespace: metallb-system
 EOF
 
-  kubectl apply -f $METALLB_IPPOOL_L2AD -n metallb-system
+  kubectl apply -f $METALLB_IPPOOL_L2AD -n metallb-system 
   rm $METALLB_IPPOOL_L2AD
 else
   echo -e "\033[33mSkipping Metal LB step. You will need to run this manually once you've added another node in order to access your pods from your local network.\033[0m"
