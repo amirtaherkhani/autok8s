@@ -12,6 +12,18 @@
 #
 # WARNING: If this is enabled and the IP address will be changed, make sure you are not running this script from a remote shell.
 # 
+
+
+# Define color codes
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+
+
+
+
 export configureTCPIPSetting=false
 export interface="eth0"                                     # Find with 'ip addr'
 export ipAddress=""                                         # Require even if 'configureTCPIPSetting' is set to 'false'.
@@ -635,6 +647,29 @@ EOF
 else
   echo -e "\033[33mSkipping Metal LB step. You will need to run this manually once you've added another node in order to access your pods from your local network.\033[0m"
 fi
+
+
+RELEASE_NAME="metrics-server"
+NAMESPACE="kube-system"
+
+# Check if Metrics Server is installed
+echo -e "${YELLOW}Checking if ${RELEASE_NAME} is installed in the ${NAMESPACE} namespace...${NC}"
+if helm status $RELEASE_NAME -n $NAMESPACE > /dev/null 2>&1; then
+    echo -e "${GREEN}${RELEASE_NAME} is already installed. Upgrading...${NC}"
+else
+    echo -e "${RED}${RELEASE_NAME} is not installed. Installing...${NC}"
+fi
+
+# Upgrade or install the Metrics Server
+helm upgrade --install $RELEASE_NAME metrics-server/metrics-server --set args[0]=--kubelet-insecure-tls -n $NAMESPACE
+
+# Print the result
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}Helm upgrade/install command executed successfully.${NC}"
+else
+    echo -e "${RED}Helm upgrade/install command failed.${NC}"
+fi
+
 
 # Print success message and tips
 
